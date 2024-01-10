@@ -1,0 +1,43 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      mvc:
+        ## Product Service Route
+        routes[0]:
+          id: product-service
+          uri: lb://product-service
+          predicates[0]: Path=/api/product
+
+        ## ORDER Service Route
+        routes[1]:
+          id: order-service
+          uri: lb://order-service
+          predicates[0]: Path=/api/order
+
+        ## ORDER Service Route
+        routes[2]:
+          id: inventory-service
+          uri: lb://inventory-service
+          predicates[0]: Path=/api/inventory
+
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        cloud:
+          gateway: TRACE
+          route:
+            RouteDefinitionsLocator: INFO
+
+
+
