@@ -1,7 +1,7 @@
 
 spring:
   application:
-    name: order
+    name: order-service
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/Order
@@ -13,7 +13,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 #        default_schema: order
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
 server:

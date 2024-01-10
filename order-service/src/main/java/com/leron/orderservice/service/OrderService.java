@@ -22,7 +22,7 @@ import java.util.UUID;
 @Transactional
 public class OrderService {
 
-    private  final WebClient webClient;
+    private  final WebClient.Builder webClientBuilder;
     private final OrderRepository orderRepository;
     public void placeOrder(OrderRequest orderRequest) {
 
@@ -41,8 +41,8 @@ public class OrderService {
                 .toList();
 
         //We are calling the Inventory microservice's endpoint to check if there are items in Inventory
-       InventoryResponse[] inventoryResponses  = webClient.get()
-                .uri("http://localhost:8082/api/inventory",
+       InventoryResponse[] inventoryResponses  = webClientBuilder.build().get()
+                .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
                         .retrieve()
                                 .bodyToMono(InventoryResponse[].class)
