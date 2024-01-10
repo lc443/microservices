@@ -13,22 +13,28 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <modules>
+    <module>product-service</module>
+    <module>order-service</module>
+    <module>inventory-service</module>
+    <module>discovery-server</module>
+
+  </modules>
+ <properties>
+   <spring-cloud.version>2023.0.0</spring-cloud.version>
+ </properties>
   <dependencyManagement>
     <dependencies>
+
       <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers-bom</artifactId>
-        <version>1.19.3</version>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <modules>
-    <module>product-service</module>
-    <module>order-service</module>
-    <module>inventory-service</module>
-  </modules>
 
   <build>
     <plugins>
@@ -38,7 +44,7 @@
         <configuration>
           <excludes>
             <exclude>
-              <groupId>org.projectlombok</groupId>
+              <groupId>org.project-lombok</groupId>
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>

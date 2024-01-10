@@ -1,0 +1,14 @@
+
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false # we want this to be a server not a client. So we set the property to false
+    fetch-registry: false
+server:
+  port: 8761 # Default eureka port
+
+spring:
+  application:
+    name: discovery-server
