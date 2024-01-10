@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "order")
+@Table(name = "t_order")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
