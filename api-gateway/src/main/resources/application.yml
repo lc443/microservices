@@ -22,11 +22,20 @@ spring:
           uri: lb://order-service
           predicates[0]: Path=/api/order
 
-        ## ORDER Service Route
+        ## DISCOVERY SERVER Route
         routes[2]:
-          id: inventory-service
-          uri: lb://inventory-service
-          predicates[0]: Path=/api/inventory
+          id: discovery-server
+          uri: http://localhost:8761
+          predicates[0]: Path=/eureka/web
+          #DEFINING A FILTER TO REROUTE URL PATH
+          filters[0]: SetPath=/
+        ## DISCOVERY SERVER STATIC Route
+        routes[3]:
+          id: discovery-server-static
+          uri: http://localhost:8761
+          predicates[0]: Path=/eureka/**
+          #DEFINING A FILTER TO REROUTE URL PATH
+
 
 
 logging:
