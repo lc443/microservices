@@ -1,5 +1,6 @@
 package com.leron.orderservice.service;
 
+import com.leron.orderservice.event.OrderPlacedEvent;
 import com.leron.orderservice.model.Order;
 import com.leron.orderservice.model.OrderLineItems;
 import com.leron.orderservice.model.dto.InventoryResponse;
@@ -7,6 +8,7 @@ import com.leron.orderservice.model.dto.OrderLineItemsDto;
 import com.leron.orderservice.model.dto.OrderRequest;
 import com.leron.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,6 +26,8 @@ public class OrderService {
 
     private  final WebClient.Builder webClientBuilder;
     private final OrderRepository orderRepository;
+
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
     public String placeOrder(OrderRequest orderRequest) {
 
        List<OrderLineItems> orderLineItemsList = orderRequest.getOrderLineItemsList()
@@ -54,6 +58,7 @@ public class OrderService {
 
         if(allProductsInStock) {
             orderRepository.save(order);
+            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
             return "Order Placed Successfully";
         }else {
             throw  new IllegalArgumentException("Product is not in stock. Please try again later");
