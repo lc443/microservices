@@ -19,6 +19,21 @@ services:
     command: -p 5431
     restart: unless-stopped
 
+  postgres-product:
+    container_name: postgres-product
+    image: postgres
+    environment:
+      POSTGRES_DB: product-service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-order:/data/postgres
+    ports:
+      - "5434:5434"
+    command: -p 5434
+    restart: unless-stopped
+
 
 
   postgres-inventory:
@@ -51,36 +66,37 @@ services:
       - ./mongo-data:/data/db
 
 
-  ## Keycloak Config with MySql Database
-  keycloak-mysql:
-    container_name: keycloak-mysql
-    image: mysql:5.7
+
+  ## Keycloak Config with Mysql database
+  keycloak-postgres:
+    container_name: keycloak-postgres
+    image: postgres
     volumes:
       - ./mysql_keycloak_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: keycloak
-      MYSQL_USER: keycloak
-      MYSQL_PASSWORD: password
+      POSTGRES_ROOT_PASSWORD: root
+      POSTGRES_DATABASE: keycloak
+      POSTGRESUSER: keycloak
+      POSTGRES_PASSWORD: password
 
   keycloak:
     container_name: keycloak
     image: quay.io/keycloak/keycloak:18.0.0
-    command: ["start-dev", "--import-realm"]
+    command: [ "start-dev", "--import-realm" ]
     environment:
       DB_VENDOR: MYSQL
       DB_ADDR: mysql
       DB_DATABASE: keycloak
+      DB_USER: keycloak
       DB_PASSWORD: password
       KEYCLOAK_ADMIN: admin
-      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8080:8080"
     volumes:
       - ./realms/:/opt/keycloak/data/import/
     depends_on:
-      - keycloak-mysql
-
+      - keycloak-postgres
 
 
  ## ZOOKEEPER AND KAFKA COnfiguration
@@ -120,7 +136,6 @@ services:
   discovery-server:
     image: aristote91/discovery-server:latest
     container_name: discovery-server
-    pull_policy: always
     ports:
       - "8761:8761"
     environment:
@@ -132,6 +147,70 @@ services:
 ## API Gateway
   api-gateway:
     image: aristote91/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8181:8080"
+    expose:
+      - "8181"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY= TRACE
+    depends_on:
+      - zipkin
+      - discovery-server
+      - keycloak
+
+  ## Product-Service Docker Compose Config
+  product-service:
+    container_name: product-service
+    image: aristote91/product-service:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - postgres-product
+      - discovery-server
+      - api-gateway
+
+  ## Order-Service Docker Compose Config
+  order-service:
+    container_name: order-service
+    image: aristote91/order-service:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-order:5431/order-service
+    depends_on:
+      - postgres-order
+      - broker
+      - zipkin
+      - discovery-server
+      - api-gateway
+
+  ## Inventory-Service Docker Compose Config
+  inventory-service:
+    container_name: inventory-service
+    image: aristote91/inventory-service:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-inventory:5432/inventory-service
+    depends_on:
+      - postgres-inventory
+      - discovery-server
+      - api-gateway
+
+    ## Notification-Service Docker Compose Config
+  notification-service:
+    container_name: notification-service
+    image: aristote91/notification-service:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - zipkin
+      - broker
+      - discovery-server
+      - api-gateway
+
+
+
 
 
 
